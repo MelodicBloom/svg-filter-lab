@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combined CRT Matrix — SVG Filter Lab</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body { background: #030712; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; padding: 40px 24px; }
+    nav { position: fixed; top: 20px; left: 24px; }
+    nav a { color: #4ade80; text-decoration: none; font-size: 0.85rem; }
+    .crt-card { width: 440px; padding: 32px; background: rgba(0,15,5,0.9); border: 1px solid rgba(74,222,128,0.25); border-radius: 4px; color: #4ade80; }
+    h1 { font-size: 1.4rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; }
+    p { font-size: 0.88rem; line-height: 1.7; color: #86efac; margin-bottom: 20px; }
+    .pipeline { font-size: 0.75rem; color: #166534; border-top: 1px solid rgba(74,222,128,0.15); padding-top: 16px; }
+    .pipeline span { display: inline-block; margin-right: 8px; color: #4ade80; }
+    .cursor { display: inline-block; width: 8px; height: 1em; background: #4ade80; animation: blink 1s step-end infinite; vertical-align: text-bottom; margin-left: 4px; }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <nav><a href="../index.html">← Filter Lab</a></nav>
+
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <filter id="crt-glitch-rgb" x="-15%" y="-15%" width="130%" height="130%">
+        <!-- 1. Chromatic Aberration -->
+        <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" in="SourceGraphic" result="red" />
+        <feOffset in="red" dx="-2" dy="0" result="redShift" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" in="SourceGraphic" result="green" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" in="SourceGraphic" result="blue" />
+        <feOffset in="blue" dx="2" dy="0" result="blueShift" />
+        <feBlend mode="screen" in="redShift" in2="green" result="rg" />
+        <feBlend mode="screen" in="rg" in2="blueShift" result="rgbSplit" />
+        <!-- 2. Glitch Distortion -->
+        <feTurbulence type="fractalNoise" baseFrequency="0.16 0.22" numOctaves="2" result="glitchNoise" />
+        <feDisplacementMap in="rgbSplit" in2="glitchNoise" scale="10" xChannelSelector="R" yChannelSelector="B" result="glitched" />
+        <!-- 3. CRT Scanlines -->
+        <feTurbulence type="fractalNoise" baseFrequency="0 0.8" numOctaves="1" result="scanNoise" />
+        <feColorMatrix type="saturate" values="0" in="scanNoise" result="scanGray" />
+        <feBlend mode="multiply" in="glitched" in2="scanGray" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="crt-card filter-combined">
+    <h1>CRT Matrix // Active<span class="cursor"></span></h1>
+    <p>Full multi-pass pipeline running in a single filter graph. RGB split → glitch displacement → CRT scanlines. Only the glitchNoise turbulence node receives JS updates — the scanline layer remains static, reducing per-tick paint cost.</p>
+    <div class="pipeline">
+      <span>feColorMatrix ×3</span>
+      <span>feOffset ×2</span>
+      <span>feBlend ×3</span>
+      <span>feTurbulence ×2</span>
+      <span>feDisplacementMap ×1</span>
+    </div>
+  </div>
+
+  <script type="module" src="../js/animations.js"></script>
+</body>
+</html>

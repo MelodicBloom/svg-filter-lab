@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glitch Distortion — SVG Filter Lab</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body { background: radial-gradient(circle at 50% 40%, #1e1b4b 0%, #0f172a 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: system-ui, sans-serif; padding: 40px 24px; }
+    nav { position: fixed; top: 20px; left: 24px; }
+    nav a { color: #38bdf8; text-decoration: none; font-size: 0.85rem; }
+    .demo-card { width: 380px; padding: 32px; color: #f8fafc; }
+    h1 { font-size: 2rem; font-weight: 800; color: #38bdf8; margin-bottom: 12px; }
+    p { color: #94a3b8; line-height: 1.6; margin-bottom: 24px; }
+    .badge { font-family: monospace; font-size: 0.8rem; padding: 4px 10px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); border-radius: 4px; color: #7dd3fc; }
+    .info { margin-top: 40px; max-width: 480px; text-align: center; color: #475569; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <nav><a href="../index.html">← Filter Lab</a></nav>
+
+  <!-- Global Filter Definitions -->
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <filter id="glitch-distort">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.18 0.22"
+          numOctaves="2"
+          result="noise"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="noise"
+          scale="12"
+          xChannelSelector="R"
+          yChannelSelector="B"
+        />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="demo-card glass-card filter-glitch">
+    <h1>Glitch Distortion</h1>
+    <p>feTurbulence generates fractal noise. feDisplacementMap warps the source image using that noise field. baseFrequency updates every 120ms via JavaScript setAttribute.</p>
+    <span class="badge">numOctaves: 2 · scale: 12 · interval: 120ms</span>
+  </div>
+
+  <p class="info">Animate via JS only. Never use CSS transitions on filter primitives — they bypass throttle control and increase paint cost per frame.</p>
+
+  <script type="module" src="../js/animations.js"></script>
+</body>
+</html>
