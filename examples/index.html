@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performant SVG Filters Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #1e293b, #020617);
+      color: #e2e8f0;
+      font-family: Inter, system-ui, sans-serif;
+      padding: 32px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      width: min(1000px, 100%);
+    }
+    .card {
+      min-height: 180px;
+      border-radius: 20px;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+      transform: translateZ(0);
+      transition: transform 180ms ease;
+    }
+    .card:hover {
+      transform: translateY(-3px) translateZ(0);
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+    .glitch {
+      filter: url(#perf-glitch);
+    }
+    .crt {
+      filter: url(#perf-crt-glitch);
+    }
+    .glass {
+      filter: url(#perf-glass);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+    }
+    .hint {
+      color: #94a3b8;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .card.is-primed {
+      will-change: filter, transform;
+    }
+    @supports not (filter: url(#perf-glitch)) {
+      .glitch, .crt, .glass {
+        filter: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <filter id="perf-glitch" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.16 0.22" numOctaves="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="B" />
+      </filter>
+      <filter id="perf-crt-glitch" x="-15%" y="-15%" width="130%" height="130%">
+        <feColorMatrix type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" in="SourceGraphic" result="red" />
+        <feOffset in="red" dx="-2" dy="0" result="redShift" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" in="SourceGraphic" result="green" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" in="SourceGraphic" result="blue" />
+        <feOffset in="blue" dx="2" dy="0" result="blueShift" />
+        <feBlend mode="screen" in="redShift" in2="green" result="rg" />
+        <feBlend mode="screen" in="rg" in2="blueShift" result="rgbSplit" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.16 0.22" numOctaves="2" result="noise" />
+        <feDisplacementMap in="rgbSplit" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="B" result="glitched" />
+        <feTurbulence type="fractalNoise" baseFrequency="0 0.8" numOctaves="1" result="scanNoise" />
+        <feColorMatrix type="saturate" values="0" in="scanNoise" result="scanGray" />
+        <feBlend mode="multiply" in="glitched" in2="scanGray" />
+      </filter>
+      <filter id="perf-glass" x="-10%" y="-10%" width="120%" height="120%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+        <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.28 0" result="glassBody" />
+        <feSpecularLighting in="blur" surfaceScale="4" specularConstant="0.6" specularExponent="18" lighting-color="#ffffff" result="specular">
+          <fePointLight x="100" y="-100" z="180" />
+        </feSpecularLighting>
+        <feComposite in="specular" in2="SourceAlpha" operator="in" result="specularMasked" />
+        <feComposite in="glassBody" in2="SourceAlpha" operator="in" result="glassMasked" />
+        <feMerge>
+          <feMergeNode in="glassMasked" />
+          <feMergeNode in="specularMasked" />
+        </feMerge>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="grid">
+    <article class="card glitch js-prime">
+      <h2>Glitch Card</h2>
+      <p class="hint">Small-scope displacement driven by throttled turbulence updates.</p>
+    </article>
+    <article class="card crt js-prime">
+      <h2>CRT Card</h2>
+      <p class="hint">RGB split, restrained distortion, and lightweight scanline texture.</p>
+    </article>
+    <article class="card glass js-prime">
+      <h2>Glass Card</h2>
+      <p class="hint">Blur and specular lighting tuned to stay visually rich without overspending paint budget.</p>
+    </article>
+  </div>
+
+  <script type="module">
+    const initPerfGlitch = ({
+      filterId = 'perf-glitch',
+      interval = 120,
+      minX = 0.12,
+      maxX = 0.28,
+      minY = 0.12,
+      maxY = 0.28,
+    } = {}) => {
+      const turbulence = document.querySelector(`#${filterId} feTurbulence[result="noise"]`)
+      if (!turbulence) return () => {}
+
+      let timer = null
+
+      const update = () => {
+        const fx = (minX + Math.random() * (maxX - minX)).toFixed(3)
+        const fy = (minY + Math.random() * (maxY - minY)).toFixed(3)
+        turbulence.setAttribute('baseFrequency', `${fx} ${fy}`)
+      }
+
+      const start = () => {
+        if (timer) return
+        update()
+        timer = window.setInterval(update, interval)
+      }
+
+      const stop = () => {
+        if (!timer) return
+        window.clearInterval(timer)
+        timer = null
+      }
+
+      const onVisibility = () => {
+        if (document.hidden) stop()
+        else start()
+      }
+
+      document.addEventListener('visibilitychange', onVisibility)
+      start()
+
+      return () => {
+        stop()
+        document.removeEventListener('visibilitychange', onVisibility)
+      }
+    }
+
+    const primeTargets = document.querySelectorAll('.js-prime')
+    primeTargets.forEach((node) => {
+      node.addEventListener('pointerenter', () => node.classList.add('is-primed'))
+      node.addEventListener('pointerleave', () => node.classList.remove('is-primed'))
+    })
+
+    window.addEventListener('load', () => {
+      initPerfGlitch({ filterId: 'perf-glitch', interval: 130 })
+      initPerfGlitch({ filterId: 'perf-crt-glitch', interval: 140 })
+    })
+  </script>
+</body>
+</html>
