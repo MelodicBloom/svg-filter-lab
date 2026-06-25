@@ -1,22 +1,47 @@
 # SVG Filter Performance Bundle
 
-This bundle contains:
+Reusable performant filter definitions. Drop into a hidden `<svg><defs>` block.
 
-- `docs/how-to-implement-performant-svg-filters-without-killing-your-frame-rate.md`
-- `docs/svg-filter-qa-checklist.md`
-- `examples/optimized-filters.svg`
-- `examples/initPerfGlitch.js`
-- `examples/index.html`
+## Filters Included
 
-## Notes
+- `#grain` — subtle fractalNoise grain overlay
+- `#distort-sm` — light displacement for hover states
+- `#distort-lg` — strong displacement for hero/glitch
+- `#glow` — soft gaussian glow via feFlood + feComposite
+- `#sharpen` — convolution sharpening kernel
 
-The filters in this bundle are intentionally conservative. They are designed as strong production-safe starting points rather than maximalist demo settings.
+## Usage
 
-## QA outcomes
+```html
+<!-- Include once in your layout -->
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+    <filter id="distort-sm">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="distort-lg">
+      <feTurbulence id="distort-lg-turb" type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#00e5ff" flood-opacity="0.5" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="sharpen">
+      <feConvolveMatrix order="3" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0" preserveAlpha="true"/>
+    </filter>
+  </defs>
+</svg>
 
-- Globalized filter definitions: pass
-- Conservative `numOctaves`: pass
-- Small-scope application: pass
-- Throttled JavaScript updates: pass
-- `will-change` used only during interaction: pass
-- Fallback behavior included: pass
+<!-- Then reference anywhere -->
+<div style="filter: url(#grain)">...</div>
+<h1 style="filter: url(#glow)">...</h1>
+```

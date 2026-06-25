@@ -54,8 +54,6 @@ For example, if a card gets a short distortion burst on hover, you can apply `wi
 
 ## Checklist for Developers
 
-Use this checklist to audit an existing SVG filter implementation:
-
 - Is the filter defined once globally instead of repeated in every component?
 - Is the filter applied only to the smallest possible surface?
 - Are `transform` and `opacity` handling the surrounding motion instead of asking the filter to do everything?
@@ -93,38 +91,10 @@ A strong baseline is a single `feTurbulence` plus `feDisplacementMap` pair with 
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Should I animate SVG filter internals with CSS keyframes?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Usually, a JavaScript-driven approach is easier to control for complex filter motion because you can throttle updates and avoid running them continuously when they are not needed. CSS can still be useful around the effect, especially for transform-based UI motion."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is feTurbulence always expensive?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Not always, but it becomes easier to feel the cost as octaves, affected area, and update frequency grow. Small elements with restrained parameter ranges are far safer than large continuously animated surfaces."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is will-change a guaranteed performance win?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "No. It is a hint, not a promise. Use it intentionally and remove it when the anticipated burst of animation is over."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What is the safest starting filter graph?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "A strong baseline is a single feTurbulence plus feDisplacementMap pair with modest values, applied to one small element. Build outward only after that simpler version performs well."
-      }
-    }
+    {"@type":"Question","name":"Should I animate SVG filter internals with CSS keyframes?","acceptedAnswer":{"@type":"Answer","text":"Usually, a JavaScript-driven approach is easier to control for complex filter motion because you can throttle updates and avoid running them continuously when they are not needed."}},
+    {"@type":"Question","name":"Is feTurbulence always expensive?","acceptedAnswer":{"@type":"Answer","text":"Not always, but it becomes easier to feel the cost as octaves, affected area, and update frequency grow."}},
+    {"@type":"Question","name":"Is will-change a guaranteed performance win?","acceptedAnswer":{"@type":"Answer","text":"No. It is a hint, not a promise. Use it intentionally and remove it when the anticipated burst of animation is over."}},
+    {"@type":"Question","name":"What is the safest starting filter graph?","acceptedAnswer":{"@type":"Answer","text":"A strong baseline is a single feTurbulence plus feDisplacementMap pair with modest values, applied to one small element."}}
   ]
 }
 </script>

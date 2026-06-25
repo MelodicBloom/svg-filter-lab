@@ -1,46 +1,41 @@
 # SVG Filter QA Checklist
 
-Use this checklist during implementation review, pull request review, or performance QA for any UI that depends on SVG filters.
+Use this checklist before shipping any SVG filter effect to production.
 
 ## Architecture
-
-- [ ] Filter definitions live once in a global hidden SVG block.
-- [ ] Filter IDs are stable and descriptive.
-- [ ] Filters are not duplicated per component instance.
-- [ ] Fallback styles exist for unsupported or low-performance contexts.
+- [ ] Filter defined once in a global `<svg><defs>` block, not repeated inline
+- [ ] Filter referenced via `filter="url(#id)"` or CSS `filter: url(#id)`
+- [ ] No duplicate filter IDs across the page
 
 ## Rendering Scope
-
-- [ ] Filters are scoped to the smallest realistic element.
-- [ ] Full-page or full-section filter application has been avoided or justified.
-- [ ] Filter region bounds (`x`, `y`, `width`, `height`) are not excessively oversized.
-- [ ] Text remains legible under the active effect.
+- [ ] Filter applied to the smallest possible element
+- [ ] `filterUnits` and `primitiveUnits` are explicitly set if needed
+- [ ] `x`, `y`, `width`, `height` on the filter element are tightened to avoid excess painted region
 
 ## Primitive Budget
-
-- [ ] Every primitive contributes visibly to the final effect.
-- [ ] `numOctaves` is `3` or lower unless benchmarked otherwise.
-- [ ] `feGaussianBlur` values are restrained.
-- [ ] `feSpecularLighting` is used only where the surface effect really needs it.
-- [ ] Chromatic split and scanline layers are not stacked without visual justification.
+- [ ] Each primitive is visually justified — none left over from experimentation
+- [ ] `numOctaves` is 3 or below unless there is a clear reason to go higher
+- [ ] `feGaussianBlur` `stdDeviation` is as low as the effect allows
+- [ ] Chained primitives do not duplicate work (e.g. two blurs where one would do)
 
 ## Animation Strategy
-
-- [ ] Filter internals are updated through JavaScript only when needed.
-- [ ] Update frequency is throttled for flicker-style effects.
-- [ ] Effects pause on hidden tabs or offscreen elements.
-- [ ] `transform` and `opacity` handle surrounding UI motion.
-- [ ] Animation does not depend on layout-triggering properties for core motion.
+- [ ] Surrounding motion uses `transform` and `opacity`, not filter re-evaluation
+- [ ] Filter attribute updates are driven by JS with explicit throttling
+- [ ] Animation is paused when element is offscreen (`IntersectionObserver`)
+- [ ] Animation is paused when tab is hidden (`document.visibilityState`)
+- [ ] `requestAnimationFrame` loops are cancelled when not needed
 
 ## CSS Hints
+- [ ] `will-change: filter` applied only immediately before animation, removed after
+- [ ] `contain: paint` or `contain: strict` used on the filter host where appropriate
+- [ ] `isolation: isolate` used only where compositing context is needed
 
-- [ ] `will-change` is applied shortly before animation, not permanently.
-- [ ] `transform: translateZ(0)` or equivalent compositing hints are used selectively.
-- [ ] Hover or interaction states clean up temporary classes after animation completes.
+## Cross-Device Testing
+- [ ] Tested on a mid-range mobile device (not just desktop)
+- [ ] Checked in Chrome DevTools with CPU throttling at 4x slowdown
+- [ ] No visible jank on scroll when filter is present
+- [ ] Frame rate remains at or above 30fps on target devices
 
-## Cross-Device QA
-
-- [ ] Effect has been tested on a low-powered laptop or mobile device.
-- [ ] Effect remains readable at reduced refresh conditions.
-- [ ] Fallback state is visually acceptable when the SVG filter is disabled.
-- [ ] DevTools paint and rendering views were checked during animation.
+## Fallback
+- [ ] Graceful degradation if `filter` is unsupported or `prefers-reduced-motion` is set
+- [ ] `@media (prefers-reduced-motion: reduce)` disables or simplifies animated filters
