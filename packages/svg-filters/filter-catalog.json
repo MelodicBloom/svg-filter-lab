@@ -1,0 +1,69 @@
+{
+  "$schema": "https://example.com/schemas/svg-filter-catalog.schema.json",
+  "version": "1.0.0",
+  "namespace": "aether.svgFilters",
+  "filters": [
+    {
+      "id": "perf-riso-grain",
+      "slug": "risograph-grain",
+      "title": "Risograph Grain",
+      "shortDescription": "A restrained print-grain overlay for editorial cards, posters, and texture-driven UI surfaces.",
+      "longDescription": "Uses fractal noise, grayscale conversion, alpha attenuation, and multiply blending to simulate lightweight analog print grain without overwhelming text or layout surfaces.",
+      "category": "texture",
+      "keywords": ["svg filter", "risograph", "grain", "print texture", "editorial ui", "analog noise"],
+      "static": true,
+      "cssFilter": "url(#perf-riso-grain)",
+      "primitives": ["feTurbulence", "feColorMatrix", "feComponentTransfer", "feBlend"],
+      "parameters": {
+        "baseFrequency": { "value": "0.58", "description": "Mid-density noise suitable for print-like grain." },
+        "numOctaves": { "value": 2, "description": "Low-cost detail layering for subtle analog texture." },
+        "alphaSlope": { "value": 0.065, "description": "Restrains grain opacity so the effect stays supportive rather than dominant." },
+        "blendMode": { "value": "multiply", "description": "Anchors grain into the surface without washing out highlights." }
+      },
+      "recommendedUseCases": ["editorial cards", "poster frames", "art direction overlays", "riso-inspired product surfaces"],
+      "accessibilityNotes": ["Avoid stacking on dense body text at small sizes.", "Prefer low-opacity grain for reading surfaces."]
+    },
+    {
+      "id": "perf-posterize",
+      "slug": "posterization-pass",
+      "title": "Posterization Pass",
+      "shortDescription": "A discrete tonal remap that compresses continuous color into stylized print-like bands.",
+      "longDescription": "Uses feComponentTransfer discrete channel maps to reduce continuous gradients into controlled tonal steps suitable for ink-print, pop-art, or screenprint-inspired interfaces.",
+      "category": "color",
+      "keywords": ["svg filter", "posterize", "feComponentTransfer", "color quantization", "ink print", "screenprint"],
+      "static": true,
+      "cssFilter": "url(#perf-posterize)",
+      "primitives": ["feComponentTransfer"],
+      "parameters": {
+        "redTable": { "value": "0 0.33 0.66 1", "description": "Four-step red quantization." },
+        "greenTable": { "value": "0 0.33 0.66 1", "description": "Four-step green quantization." },
+        "blueTable": { "value": "0 0.5 1", "description": "Three-step blue quantization for warmer print-style contrast." }
+      },
+      "recommendedUseCases": ["hero artwork", "print-inspired imagery", "illustration surfaces", "memphis and pop compositions"],
+      "accessibilityNotes": ["Do not use on critical photographic detail without testing.", "Preserve an unfiltered fallback for image comprehension where needed."]
+    },
+    {
+      "id": "perf-ambient-noise-glass",
+      "slug": "ambient-noise-glass",
+      "title": "Ambient Noise Glass",
+      "shortDescription": "A light-mode glass surface with soft blur, subtle noise, and restrained specular lighting.",
+      "longDescription": "Combines blur, alpha shaping, low-opacity procedural noise, and modest specular lighting to create a bright frosted-glass layer that reads cleanly in light interfaces.",
+      "category": "surface",
+      "keywords": ["svg filter", "glassmorphism", "ambient noise", "light mode", "frosted glass", "surface texture"],
+      "static": false,
+      "cssFilter": "url(#perf-ambient-noise-glass)",
+      "primitives": ["feGaussianBlur", "feColorMatrix", "feTurbulence", "feComponentTransfer", "feBlend", "feSpecularLighting", "fePointLight", "feComposite", "feMerge"],
+      "parameters": {
+        "blurStdDeviation": { "value": 2.5, "description": "Softens the source without becoming muddy." },
+        "glassAlpha": { "value": 0.18, "description": "Keeps the body airy for light-mode surfaces." },
+        "noiseBaseFrequency": { "value": "0.8", "description": "Fine static grain for ambient texture." },
+        "noiseAlphaSlope": { "value": 0.025, "description": "Very restrained noise opacity to avoid contamination of text." },
+        "surfaceScale": { "value": 3, "description": "Modest lighting relief for subtle highlights." },
+        "specularConstant": { "value": 0.45, "description": "Controls the strength of the reflected highlight." },
+        "specularExponent": { "value": 14, "description": "Keeps the highlight broad and soft rather than sharp." }
+      },
+      "recommendedUseCases": ["light-mode cards", "floating navigation", "tool panels", "premium dashboard surfaces"],
+      "accessibilityNotes": ["Pair with strong foreground contrast.", "Prefer static noise for reading surfaces and enable animation only on hover or focus."]
+    }
+  ]
+}
